@@ -1,4 +1,4 @@
-# Django Intern Assignment — Modular Entity and Mapping System
+# Modular Entity and Mapping System
 
 A Django REST Framework backend for managing Vendors, Products, Courses, Certifications, and their mappings. Each entity and each mapping lives in its own Django app. All APIs are built using `APIView` only.
 
@@ -7,8 +7,8 @@ A Django REST Framework backend for managing Vendors, Products, Courses, Certifi
 ## Setup
 
 ```bash
-git clone <repo-url>
-cd ai-certs
+git clone https://github.com/Muskan244/django-entity-mapping-api.git
+cd django-entity-mapping-api
 pip install -r requirements.txt
 ```
 
