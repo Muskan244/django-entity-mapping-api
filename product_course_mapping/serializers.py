@@ -1,8 +1,13 @@
 from rest_framework import serializers
+from product.serializers import ProductSerializer
+from course.serializers import CourseSerializer
 from .models import ProductCourseMapping
 
 
 class ProductCourseMappingSerializer(serializers.ModelSerializer):
+    product_detail = ProductSerializer(source="product", read_only=True)
+    course_detail = CourseSerializer(source="course", read_only=True)
+
     class Meta:
         model = ProductCourseMapping
         fields = "__all__"

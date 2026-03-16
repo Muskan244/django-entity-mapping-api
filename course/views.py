@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from core.utils import get_object_or_none
 from .models import Course
 from .serializers import CourseSerializer
 
@@ -37,15 +38,9 @@ class CourseListView(APIView):
 
 
 class CourseDetailView(APIView):
-    def get_object(self, pk):
-        try:
-            return Course.objects.get(pk=pk)
-        except Course.DoesNotExist:
-            return None
-
     @swagger_auto_schema(responses={200: CourseSerializer})
     def get(self, request, pk):
-        course = self.get_object(pk)
+        course = get_object_or_none(Course, pk)
         if course is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = CourseSerializer(course)
@@ -53,7 +48,7 @@ class CourseDetailView(APIView):
 
     @swagger_auto_schema(request_body=CourseSerializer, responses={200: CourseSerializer})
     def put(self, request, pk):
-        course = self.get_object(pk)
+        course = get_object_or_none(Course, pk)
         if course is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = CourseSerializer(course, data=request.data)
@@ -64,7 +59,7 @@ class CourseDetailView(APIView):
 
     @swagger_auto_schema(request_body=CourseSerializer, responses={200: CourseSerializer})
     def patch(self, request, pk):
-        course = self.get_object(pk)
+        course = get_object_or_none(Course, pk)
         if course is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = CourseSerializer(course, data=request.data, partial=True)
@@ -75,8 +70,9 @@ class CourseDetailView(APIView):
 
     @swagger_auto_schema(responses={204: 'No Content'})
     def delete(self, request, pk):
-        course = self.get_object(pk)
+        course = get_object_or_none(Course, pk)
         if course is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        course.delete()
+        course.is_active = False
+        course.save()
         return Response(status=status.HTTP_204_NO_CONTENT)

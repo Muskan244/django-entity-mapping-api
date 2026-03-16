@@ -52,7 +52,7 @@ python manage.py runserver
 python manage.py seed_data
 ```
 
-This creates 3 vendors (Microsoft, AWS, Google), 3 products, 3 courses, 3 certifications, and links them with primary mappings.
+Creates 3 vendors (Microsoft, AWS, Google), 3 products, 3 courses, 3 certifications, and links them with primary mappings.
 
 ---
 
@@ -66,7 +66,7 @@ This creates 3 vendors (Microsoft, AWS, Google), 3 products, 3 courses, 3 certif
 | GET | `/api/vendors/<id>/` | Get a vendor |
 | PUT | `/api/vendors/<id>/` | Update a vendor |
 | PATCH | `/api/vendors/<id>/` | Partial update |
-| DELETE | `/api/vendors/<id>/` | Delete a vendor |
+| DELETE | `/api/vendors/<id>/` | Soft delete (sets `is_active=False`) |
 
 Same pattern applies for `/api/products/`, `/api/courses/`, `/api/certifications/`.
 
@@ -80,6 +80,8 @@ Same pattern applies for `/api/products/`, `/api/courses/`, `/api/certifications
 | GET/POST | `/api/course-certification-mappings/` |
 | GET/PUT/PATCH/DELETE | `/api/course-certification-mappings/<id>/` |
 
+Mapping GET responses include nested objects for both related entities alongside the writable FK fields.
+
 ### Filtering
 
 ```
@@ -88,6 +90,15 @@ GET /api/vendor-product-mappings/?vendor_id=1
 GET /api/product-course-mappings/?product_id=2
 GET /api/course-certification-mappings/?course_id=1
 ```
+
+---
+
+## Validations
+
+- `code` is unique per master entity
+- Duplicate mappings (same parent + child pair) are rejected
+- Only one `primary_mapping=True` is allowed per parent at each level
+- All FK references are validated by DRF
 
 ---
 
@@ -128,3 +139,10 @@ curl -X POST http://127.0.0.1:8000/api/vendor-product-mappings/ \
 ```bash
 curl http://127.0.0.1:8000/api/vendor-product-mappings/?vendor_id=1
 ```
+
+**Soft delete a vendor**
+```bash
+curl -X DELETE http://127.0.0.1:8000/api/vendors/1/
+```
+
+The record remains in the database with `is_active` set to `false`.

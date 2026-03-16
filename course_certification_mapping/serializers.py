@@ -1,8 +1,13 @@
 from rest_framework import serializers
+from course.serializers import CourseSerializer
+from certification.serializers import CertificationSerializer
 from .models import CourseCertificationMapping
 
 
 class CourseCertificationMappingSerializer(serializers.ModelSerializer):
+    course_detail = CourseSerializer(source="course", read_only=True)
+    certification_detail = CertificationSerializer(source="certification", read_only=True)
+
     class Meta:
         model = CourseCertificationMapping
         fields = "__all__"

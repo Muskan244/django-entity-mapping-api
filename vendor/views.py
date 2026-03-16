@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from core.utils import get_object_or_none
 from .models import Vendor
 from .serializers import VendorSerializer
 
@@ -37,15 +38,9 @@ class VendorListView(APIView):
 
 
 class VendorDetailView(APIView):
-    def get_object(self, pk):
-        try:
-            return Vendor.objects.get(pk=pk)
-        except Vendor.DoesNotExist:
-            return None
-
     @swagger_auto_schema(responses={200: VendorSerializer})
     def get(self, request, pk):
-        vendor = self.get_object(pk)
+        vendor = get_object_or_none(Vendor, pk)
         if vendor is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = VendorSerializer(vendor)
@@ -53,7 +48,7 @@ class VendorDetailView(APIView):
 
     @swagger_auto_schema(request_body=VendorSerializer, responses={200: VendorSerializer})
     def put(self, request, pk):
-        vendor = self.get_object(pk)
+        vendor = get_object_or_none(Vendor, pk)
         if vendor is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = VendorSerializer(vendor, data=request.data)
@@ -64,7 +59,7 @@ class VendorDetailView(APIView):
 
     @swagger_auto_schema(request_body=VendorSerializer, responses={200: VendorSerializer})
     def patch(self, request, pk):
-        vendor = self.get_object(pk)
+        vendor = get_object_or_none(Vendor, pk)
         if vendor is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = VendorSerializer(vendor, data=request.data, partial=True)
@@ -75,8 +70,9 @@ class VendorDetailView(APIView):
 
     @swagger_auto_schema(responses={204: 'No Content'})
     def delete(self, request, pk):
-        vendor = self.get_object(pk)
+        vendor = get_object_or_none(Vendor, pk)
         if vendor is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        vendor.delete()
+        vendor.is_active = False
+        vendor.save()
         return Response(status=status.HTTP_204_NO_CONTENT)

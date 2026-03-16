@@ -1,8 +1,13 @@
 from rest_framework import serializers
+from vendor.serializers import VendorSerializer
+from product.serializers import ProductSerializer
 from .models import VendorProductMapping
 
 
 class VendorProductMappingSerializer(serializers.ModelSerializer):
+    vendor_detail = VendorSerializer(source="vendor", read_only=True)
+    product_detail = ProductSerializer(source="product", read_only=True)
+
     class Meta:
         model = VendorProductMapping
         fields = "__all__"

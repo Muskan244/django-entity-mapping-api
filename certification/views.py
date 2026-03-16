@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from core.utils import get_object_or_none
 from .models import Certification
 from .serializers import CertificationSerializer
 
@@ -37,15 +38,9 @@ class CertificationListView(APIView):
 
 
 class CertificationDetailView(APIView):
-    def get_object(self, pk):
-        try:
-            return Certification.objects.get(pk=pk)
-        except Certification.DoesNotExist:
-            return None
-
     @swagger_auto_schema(responses={200: CertificationSerializer})
     def get(self, request, pk):
-        certification = self.get_object(pk)
+        certification = get_object_or_none(Certification, pk)
         if certification is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = CertificationSerializer(certification)
@@ -53,7 +48,7 @@ class CertificationDetailView(APIView):
 
     @swagger_auto_schema(request_body=CertificationSerializer, responses={200: CertificationSerializer})
     def put(self, request, pk):
-        certification = self.get_object(pk)
+        certification = get_object_or_none(Certification, pk)
         if certification is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = CertificationSerializer(certification, data=request.data)
@@ -64,7 +59,7 @@ class CertificationDetailView(APIView):
 
     @swagger_auto_schema(request_body=CertificationSerializer, responses={200: CertificationSerializer})
     def patch(self, request, pk):
-        certification = self.get_object(pk)
+        certification = get_object_or_none(Certification, pk)
         if certification is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = CertificationSerializer(certification, data=request.data, partial=True)
@@ -75,8 +70,9 @@ class CertificationDetailView(APIView):
 
     @swagger_auto_schema(responses={204: 'No Content'})
     def delete(self, request, pk):
-        certification = self.get_object(pk)
+        certification = get_object_or_none(Certification, pk)
         if certification is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        certification.delete()
+        certification.is_active = False
+        certification.save()
         return Response(status=status.HTTP_204_NO_CONTENT)

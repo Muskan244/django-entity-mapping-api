@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from core.utils import get_object_or_none
 from .models import Product
 from .serializers import ProductSerializer
 
@@ -37,15 +38,9 @@ class ProductListView(APIView):
 
 
 class ProductDetailView(APIView):
-    def get_object(self, pk):
-        try:
-            return Product.objects.get(pk=pk)
-        except Product.DoesNotExist:
-            return None
-
     @swagger_auto_schema(responses={200: ProductSerializer})
     def get(self, request, pk):
-        product = self.get_object(pk)
+        product = get_object_or_none(Product, pk)
         if product is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProductSerializer(product)
@@ -53,7 +48,7 @@ class ProductDetailView(APIView):
 
     @swagger_auto_schema(request_body=ProductSerializer, responses={200: ProductSerializer})
     def put(self, request, pk):
-        product = self.get_object(pk)
+        product = get_object_or_none(Product, pk)
         if product is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProductSerializer(product, data=request.data)
@@ -64,7 +59,7 @@ class ProductDetailView(APIView):
 
     @swagger_auto_schema(request_body=ProductSerializer, responses={200: ProductSerializer})
     def patch(self, request, pk):
-        product = self.get_object(pk)
+        product = get_object_or_none(Product, pk)
         if product is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProductSerializer(product, data=request.data, partial=True)
@@ -75,8 +70,9 @@ class ProductDetailView(APIView):
 
     @swagger_auto_schema(responses={204: 'No Content'})
     def delete(self, request, pk):
-        product = self.get_object(pk)
+        product = get_object_or_none(Product, pk)
         if product is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        product.delete()
+        product.is_active = False
+        product.save()
         return Response(status=status.HTTP_204_NO_CONTENT)

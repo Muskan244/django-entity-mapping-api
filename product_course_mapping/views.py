@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from core.utils import get_object_or_none
 from .models import ProductCourseMapping
 from .serializers import ProductCourseMappingSerializer
 
@@ -40,15 +41,9 @@ class ProductCourseMappingListView(APIView):
 
 
 class ProductCourseMappingDetailView(APIView):
-    def get_object(self, pk):
-        try:
-            return ProductCourseMapping.objects.get(pk=pk)
-        except ProductCourseMapping.DoesNotExist:
-            return None
-
     @swagger_auto_schema(responses={200: ProductCourseMappingSerializer, 404: "Not Found"})
     def get(self, request, pk):
-        mapping = self.get_object(pk)
+        mapping = get_object_or_none(ProductCourseMapping, pk)
         if mapping is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProductCourseMappingSerializer(mapping)
@@ -59,7 +54,7 @@ class ProductCourseMappingDetailView(APIView):
         responses={200: ProductCourseMappingSerializer, 400: "Validation Error", 404: "Not Found"},
     )
     def put(self, request, pk):
-        mapping = self.get_object(pk)
+        mapping = get_object_or_none(ProductCourseMapping, pk)
         if mapping is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProductCourseMappingSerializer(mapping, data=request.data)
@@ -73,7 +68,7 @@ class ProductCourseMappingDetailView(APIView):
         responses={200: ProductCourseMappingSerializer, 400: "Validation Error", 404: "Not Found"},
     )
     def patch(self, request, pk):
-        mapping = self.get_object(pk)
+        mapping = get_object_or_none(ProductCourseMapping, pk)
         if mapping is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProductCourseMappingSerializer(mapping, data=request.data, partial=True)
@@ -84,8 +79,9 @@ class ProductCourseMappingDetailView(APIView):
 
     @swagger_auto_schema(responses={204: "No Content", 404: "Not Found"})
     def delete(self, request, pk):
-        mapping = self.get_object(pk)
+        mapping = get_object_or_none(ProductCourseMapping, pk)
         if mapping is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        mapping.delete()
+        mapping.is_active = False
+        mapping.save()
         return Response(status=status.HTTP_204_NO_CONTENT)

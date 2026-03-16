@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from core.utils import get_object_or_none
 from .models import CourseCertificationMapping
 from .serializers import CourseCertificationMappingSerializer
 
@@ -40,15 +41,9 @@ class CourseCertificationMappingListView(APIView):
 
 
 class CourseCertificationMappingDetailView(APIView):
-    def get_object(self, pk):
-        try:
-            return CourseCertificationMapping.objects.get(pk=pk)
-        except CourseCertificationMapping.DoesNotExist:
-            return None
-
     @swagger_auto_schema(responses={200: CourseCertificationMappingSerializer, 404: "Not Found"})
     def get(self, request, pk):
-        mapping = self.get_object(pk)
+        mapping = get_object_or_none(CourseCertificationMapping, pk)
         if mapping is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = CourseCertificationMappingSerializer(mapping)
@@ -59,7 +54,7 @@ class CourseCertificationMappingDetailView(APIView):
         responses={200: CourseCertificationMappingSerializer, 400: "Validation Error", 404: "Not Found"},
     )
     def put(self, request, pk):
-        mapping = self.get_object(pk)
+        mapping = get_object_or_none(CourseCertificationMapping, pk)
         if mapping is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = CourseCertificationMappingSerializer(mapping, data=request.data)
@@ -73,7 +68,7 @@ class CourseCertificationMappingDetailView(APIView):
         responses={200: CourseCertificationMappingSerializer, 400: "Validation Error", 404: "Not Found"},
     )
     def patch(self, request, pk):
-        mapping = self.get_object(pk)
+        mapping = get_object_or_none(CourseCertificationMapping, pk)
         if mapping is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = CourseCertificationMappingSerializer(mapping, data=request.data, partial=True)
@@ -84,8 +79,9 @@ class CourseCertificationMappingDetailView(APIView):
 
     @swagger_auto_schema(responses={204: "No Content", 404: "Not Found"})
     def delete(self, request, pk):
-        mapping = self.get_object(pk)
+        mapping = get_object_or_none(CourseCertificationMapping, pk)
         if mapping is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        mapping.delete()
+        mapping.is_active = False
+        mapping.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
